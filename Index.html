@@ -1,0 +1,1795 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+<title>Photo To Detailed 3D</title>
+
+<style>
+*{
+  box-sizing:border-box;
+}
+
+body{
+  margin:0;
+  background:#070b16;
+  color:white;
+  font-family:Arial,sans-serif;
+}
+
+header{
+  text-align:center;
+  padding:25px 15px;
+  background:linear-gradient(135deg,#111a3b,#25154a);
+}
+
+h1{
+  margin:0 0 8px;
+  font-size:30px;
+}
+
+.subtitle{
+  color:#aeb9d5;
+}
+
+.container{
+  max-width:1000px;
+  margin:auto;
+  padding:16px;
+}
+
+.card{
+  background:#11182b;
+  border:1px solid #2b3858;
+  border-radius:18px;
+  padding:18px;
+  margin-bottom:16px;
+}
+
+.upload{
+  display:block;
+  text-align:center;
+  padding:35px 15px;
+  border:2px dashed #61709a;
+  border-radius:16px;
+  cursor:pointer;
+}
+
+.upload:hover{
+  background:#171f36;
+}
+
+#photo{
+  display:none;
+}
+
+#preview{
+  display:none;
+  width:100%;
+  max-height:300px;
+  object-fit:contain;
+  margin-top:15px;
+  border-radius:14px;
+}
+
+.controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:15px;
+  margin-top:18px;
+}
+
+.control label{
+  display:block;
+  color:#d2d9ea;
+  margin-bottom:5px;
+}
+
+input[type=range]{
+  width:100%;
+}
+
+.buttons{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:9px;
+  margin-top:18px;
+}
+
+button{
+  border:0;
+  padding:13px;
+  border-radius:11px;
+  background:#293451;
+  color:white;
+  font-weight:bold;
+}
+
+button:active{
+  transform:scale(.98);
+}
+
+button:disabled{
+  opacity:.4;
+}
+
+.primary{
+  background:#6857ff;
+}
+
+#status{
+  margin-top:15px;
+  padding:12px;
+  border-radius:10px;
+  background:#090e1d;
+  color:#cbd4e9;
+  text-align:center;
+}
+
+canvas{
+  width:100%;
+  height:520px;
+  display:block;
+  background:#04060c;
+  border-radius:15px;
+}
+
+.info{
+  color:#9ca8c2;
+  font-size:13px;
+  line-height:1.6;
+  margin-top:10px;
+}
+
+@media(max-width:650px){
+
+  .controls{
+    grid-template-columns:1fr;
+  }
+
+  .buttons{
+    grid-template-columns:1fr 1fr;
+  }
+
+  canvas{
+    height:430px;
+  }
+
+}
+</style>
+</head>
+
+<body>
+
+<header>
+
+<h1>📷 Photo → Detailed 3D</h1>
+
+<div class="subtitle">
+Free 3D Photo Converter
+</div>
+
+</header>
+
+
+<div class="container">
+
+
+<div class="card">
+
+<label class="upload" for="photo">
+
+<h2>📁 Photo Select Karo</h2>
+
+<p>JPG / PNG photo upload karo</p>
+
+<small>
+Clear photo se better result milega
+</small>
+
+</label>
+
+<input
+id="photo"
+type="file"
+accept="image/*"
+>
+
+
+<img id="preview">
+
+
+<div class="controls">
+
+<div class="control">
+
+<label>
+Mesh Detail:
+<span id="detailText">180</span>
+</label>
+
+<input
+id="detail"
+type="range"
+min="80"
+max="280"
+value="180"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+Depth:
+<span id="depthText">1.0</span>
+</label>
+
+<input
+id="depth"
+type="range"
+min="0"
+max="2"
+step="0.1"
+value="1"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+Shape / Relief:
+<span id="reliefText">1.0</span>
+</label>
+
+<input
+id="relief"
+type="range"
+min="0"
+max="2"
+step="0.1"
+value="1"
+>
+
+</div>
+
+
+<div class="control">
+
+<label>
+Model Style
+</label>
+
+<select
+id="style"
+style="
+width:100%;
+padding:12px;
+border-radius:10px;
+background:#293451;
+color:white;
+border:0;
+">
+
+<option value="texture">
+Original Photo
+</option>
+
+<option value="clay">
+3D Clay
+</option>
+
+<option value="wire">
+Wireframe
+</option>
+
+</select>
+
+</div>
+
+</div>
+
+
+<div class="buttons">
+
+<button
+id="generate"
+class="primary"
+disabled
+>
+🧊 Generate 3D
+</button>
+
+<button
+id="rotate"
+disabled
+>
+🔄 Rotate
+</button>
+
+<button
+id="reset"
+disabled
+>
+↺ Reset
+</button>
+
+<button
+id="obj"
+disabled
+>
+📥 OBJ
+</button>
+
+<button
+id="glb"
+disabled
+>
+📥 GLB
+</button>
+
+<button
+id="wire"
+disabled
+>
+▦ Wireframe
+</button>
+
+</div>
+
+
+<div id="status">
+Pehle photo select karo.
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<canvas id="viewer"></canvas>
+
+<div class="info">
+
+👆 Finger se model ko ghumao.<br>
+🔍 Pinch karke zoom karo.<br>
+🔄 Rotate button se automatic rotation chalu karo.
+
+</div>
+
+</div>
+
+
+
+<div class="card">
+
+<b>⚠️ Important</b>
+
+<div class="info">
+
+Ek single photo se exact 360° backside automatically
+reconstruct nahi ho sakti. Ye website photo se
+depth-based detailed 3D mesh banati hai.
+
+Proper AI 360° model ke liye multiple photos ya
+AI 3D reconstruction server/model ki zarurat hoti hai.
+
+</div>
+
+</div>
+
+
+</div>
+
+
+
+<script type="module">
+
+
+/* =========================
+   THREE JS
+========================= */
+
+import * as THREE from
+"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+
+import {OrbitControls} from
+"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+
+import {GLTFExporter} from
+"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/exporters/GLTFExporter.js";
+
+
+
+/* =========================
+   ELEMENTS
+========================= */
+
+const photo =
+document.getElementById("photo");
+
+const preview =
+document.getElementById("preview");
+
+const generate =
+document.getElementById("generate");
+
+const rotate =
+document.getElementById("rotate");
+
+const reset =
+document.getElementById("reset");
+
+const objButton =
+document.getElementById("obj");
+
+const glbButton =
+document.getElementById("glb");
+
+const wireButton =
+document.getElementById("wire");
+
+const style =
+document.getElementById("style");
+
+const detail =
+document.getElementById("detail");
+
+const depth =
+document.getElementById("depth");
+
+const relief =
+document.getElementById("relief");
+
+const status =
+document.getElementById("status");
+
+const canvas =
+document.getElementById("viewer");
+
+
+
+/* =========================
+   RENDERER
+========================= */
+
+const renderer =
+new THREE.WebGLRenderer({
+
+canvas:canvas,
+
+antialias:true
+
+});
+
+
+renderer.setPixelRatio(
+Math.min(
+window.devicePixelRatio,
+2
+)
+);
+
+
+renderer.outputColorSpace =
+THREE.SRGBColorSpace;
+
+
+
+/* =========================
+   SCENE
+========================= */
+
+const scene =
+new THREE.Scene();
+
+scene.background =
+new THREE.Color(
+0x04060c
+);
+
+
+
+/* =========================
+   CAMERA
+========================= */
+
+const camera =
+new THREE.PerspectiveCamera(
+45,
+1,
+0.01,
+100
+);
+
+camera.position.set(
+0,
+0,
+4.5
+);
+
+
+
+/* =========================
+   CONTROLS
+========================= */
+
+const controls =
+new OrbitControls(
+camera,
+canvas
+);
+
+controls.enableDamping =
+true;
+
+controls.minDistance =
+1.2;
+
+controls.maxDistance =
+12;
+
+
+
+/* =========================
+   LIGHTS
+========================= */
+
+const ambient =
+new THREE.HemisphereLight(
+0xffffff,
+0x222233,
+2
+);
+
+scene.add(ambient);
+
+
+const light1 =
+new THREE.DirectionalLight(
+0xffffff,
+2.5
+);
+
+light1.position.set(
+4,
+5,
+6
+);
+
+scene.add(light1);
+
+
+const light2 =
+new THREE.DirectionalLight(
+0xffffff,
+1.2
+);
+
+light2.position.set(
+-4,
+2,
+3
+);
+
+scene.add(light2);
+
+
+
+/* =========================
+   VARIABLES
+========================= */
+
+let model = null;
+
+let texture = null;
+
+let rotating = false;
+
+let wireframe = false;
+
+
+
+/* =========================
+   RESIZE
+========================= */
+
+function resize(){
+
+const width =
+canvas.clientWidth;
+
+const height =
+window.innerWidth < 650
+? 430
+: 520;
+
+
+renderer.setSize(
+width,
+height,
+false
+);
+
+
+camera.aspect =
+width/height;
+
+
+camera.updateProjectionMatrix();
+
+}
+
+
+window.addEventListener(
+"resize",
+resize
+);
+
+resize();
+
+
+
+/* =========================
+   SLIDERS
+========================= */
+
+detail.oninput=()=>{
+
+document.getElementById(
+"detailText"
+).textContent=
+detail.value;
+
+};
+
+
+depth.oninput=()=>{
+
+document.getElementById(
+"depthText"
+).textContent=
+depth.value;
+
+};
+
+
+relief.oninput=()=>{
+
+document.getElementById(
+"reliefText"
+).textContent=
+relief.value;
+
+};
+
+
+
+/* =========================
+   PHOTO
+========================= */
+
+photo.onchange=()=>{
+
+const file =
+photo.files[0];
+
+if(!file)return;
+
+
+preview.src =
+URL.createObjectURL(
+file
+);
+
+preview.style.display =
+"block";
+
+
+generate.disabled =
+false;
+
+
+status.textContent =
+"Photo ready hai. Generate 3D dabao.";
+
+};
+
+
+
+/* =========================
+   PIXEL
+========================= */
+
+function getPixel(
+data,
+width,
+height,
+x,
+y
+){
+
+x=Math.max(
+0,
+Math.min(
+width-1,
+x
+)
+);
+
+y=Math.max(
+0,
+Math.min(
+height-1,
+y
+)
+);
+
+
+const i =
+(y*width+x)*4;
+
+
+return [
+
+data[i],
+data[i+1],
+data[i+2]
+
+];
+
+}
+
+
+
+/* =========================
+   DEPTH
+========================= */
+
+function createDepth(
+image
+){
+
+const W =
+Number(detail.value);
+
+
+const H =
+Math.max(
+80,
+Math.round(
+W *
+image.naturalHeight /
+image.naturalWidth
+)
+);
+
+
+const temp =
+document.createElement(
+"canvas"
+);
+
+
+temp.width =
+W;
+
+temp.height =
+H;
+
+
+const ctx =
+temp.getContext(
+"2d",
+{
+willReadFrequently:true
+}
+);
+
+
+ctx.drawImage(
+image,
+0,
+0,
+W,
+H
+);
+
+
+const data =
+ctx.getImageData(
+0,
+0,
+W,
+H
+).data;
+
+
+const positions=[];
+
+const uvs=[];
+
+const indices=[];
+
+
+const depthPower =
+Number(depth.value);
+
+
+const reliefPower =
+Number(relief.value);
+
+
+
+function depthAt(
+x,
+y
+){
+
+const rgb =
+getPixel(
+data,
+W,
+H,
+x,
+y
+);
+
+
+const brightness =
+
+(
+0.2126*rgb[0]+
+0.7152*rgb[1]+
+0.0722*rgb[2]
+
+)/255;
+
+
+
+const left =
+getPixel(
+data,
+W,
+H,
+x-2,
+y
+);
+
+
+const right =
+getPixel(
+data,
+W,
+H,
+x+2,
+y
+);
+
+
+const up =
+getPixel(
+data,
+W,
+H,
+x,
+y-2
+);
+
+
+const down =
+getPixel(
+data,
+W,
+H,
+x,
+y+2
+);
+
+
+const l =
+(left[0]+
+left[1]+
+left[2])/3;
+
+
+const r =
+(right[0]+
+right[1]+
+right[2])/3;
+
+
+const u =
+(up[0]+
+up[1]+
+up[2])/3;
+
+
+const d =
+(down[0]+
+down[1]+
+down[2])/3;
+
+
+const edge =
+Math.min(
+1,
+(
+Math.abs(l-r)+
+Math.abs(u-d)
+)/160
+);
+
+
+const nx =
+x/(W-1)-0.5;
+
+
+const ny =
+y/(H-1)-0.5;
+
+
+const center =
+Math.max(
+0,
+1-
+Math.sqrt(
+nx*nx*1.5+
+ny*ny*1.5
+)
+);
+
+
+return (
+
+0.02+
+
+brightness*
+0.45*
+depthPower+
+
+center*
+0.30*
+reliefPower+
+
+edge*
+0.08
+
+);
+
+}
+
+
+
+/* VERTICES */
+
+for(
+let y=0;
+y<H;
+y++
+){
+
+for(
+let x=0;
+x<W;
+x++
+){
+
+const z =
+depthAt(
+x,
+y
+);
+
+
+positions.push(
+
+(
+x/(W-1)-0.5
+)*3.4,
+
+(
+0.5-
+y/(H-1)
+)*
+3.4*
+H/W,
+
+z
+
+);
+
+
+uvs.push(
+
+x/(W-1),
+
+1-
+y/(H-1)
+
+);
+
+}
+
+}
+
+
+
+/* FACES */
+
+for(
+let y=0;
+y<H-1;
+y++
+){
+
+for(
+let x=0;
+x<W-1;
+x++
+){
+
+const a =
+y*W+x;
+
+const b =
+a+1;
+
+const c =
+a+W;
+
+const d =
+c+1;
+
+
+indices.push(
+
+a,c,b,
+
+b,c,d
+
+);
+
+}
+
+}
+
+
+
+const geometry =
+new THREE.BufferGeometry();
+
+
+geometry.setAttribute(
+
+"position",
+
+new THREE.Float32BufferAttribute(
+positions,
+3
+)
+
+);
+
+
+geometry.setAttribute(
+
+"uv",
+
+new THREE.Float32BufferAttribute(
+uvs,
+2
+)
+
+);
+
+
+geometry.setIndex(
+indices
+);
+
+
+geometry.computeVertexNormals();
+
+
+return geometry;
+
+}
+
+
+
+/* =========================
+   GENERATE
+========================= */
+
+generate.onclick =
+async()=>{
+
+generate.disabled =
+true;
+
+
+status.textContent =
+"Detailed 3D mesh ban raha hai...";
+
+
+const image =
+new Image();
+
+
+image.src =
+preview.src;
+
+
+await image.decode();
+
+
+const geometry =
+createDepth(
+image
+);
+
+
+texture =
+new THREE.Texture(
+image
+);
+
+
+texture.needsUpdate =
+true;
+
+
+texture.colorSpace =
+THREE.SRGBColorSpace;
+
+
+
+if(model){
+
+scene.remove(
+model
+);
+
+}
+
+
+
+/* MATERIAL */
+
+let material;
+
+
+
+if(
+style.value ===
+"clay"
+){
+
+material =
+new THREE.MeshStandardMaterial({
+
+color:0xbcbcbc,
+
+roughness:.8,
+
+side:
+THREE.DoubleSide
+
+});
+
+}
+
+else if(
+style.value ===
+"wire"
+){
+
+material =
+new THREE.MeshBasicMaterial({
+
+wireframe:true,
+
+color:0xffffff,
+
+side:
+THREE.DoubleSide
+
+});
+
+wireframe=true;
+
+}
+
+else{
+
+material =
+new THREE.MeshStandardMaterial({
+
+map:texture,
+
+roughness:.72,
+
+side:
+THREE.DoubleSide
+
+});
+
+wireframe=false;
+
+}
+
+
+
+model =
+new THREE.Mesh(
+geometry,
+material
+);
+
+
+scene.add(
+model
+);
+
+
+camera.position.set(
+0,
+0,
+4.5
+);
+
+
+controls.target.set(
+0,
+0,
+0.25
+);
+
+
+controls.update();
+
+
+generate.disabled =
+false;
+
+
+rotate.disabled =
+false;
+
+reset.disabled =
+false;
+
+objButton.disabled =
+false;
+
+glbButton.disabled =
+false;
+
+wireButton.disabled =
+false;
+
+
+status.textContent =
+"✅ Detailed 3D model ready!";
+
+};
+
+
+
+/* =========================
+   ROTATE
+========================= */
+
+rotate.onclick=()=>{
+
+rotating =
+!rotating;
+
+
+rotate.textContent =
+rotating
+?
+"⏹ Stop Rotate"
+:
+"🔄 Rotate";
+
+};
+
+
+
+/* =========================
+   RESET
+========================= */
+
+reset.onclick=()=>{
+
+if(model){
+
+model.rotation.set(
+0,
+0,
+0
+);
+
+}
+
+
+camera.position.set(
+0,
+0,
+4.5
+);
+
+
+controls.target.set(
+0,
+0,
+0.25
+);
+
+
+controls.update();
+
+};
+
+
+
+/* =========================
+   WIREFRAME
+========================= */
+
+wireButton.onclick=()=>{
+
+if(!model)return;
+
+
+wireframe =
+!wireframe;
+
+
+if(wireframe){
+
+model.material =
+new THREE.MeshBasicMaterial({
+
+wireframe:true,
+
+color:0xffffff,
+
+side:
+THREE.DoubleSide
+
+});
+
+wireButton.textContent =
+"▦ Solid";
+
+}
+
+else{
+
+if(
+style.value ===
+"clay"
+){
+
+model.material =
+new THREE.MeshStandardMaterial({
+
+color:0xbcbcbc,
+
+roughness:.8,
+
+side:
+THREE.DoubleSide
+
+});
+
+}
+
+else{
+
+model.material =
+new THREE.MeshStandardMaterial({
+
+map:texture,
+
+roughness:.72,
+
+side:
+THREE.DoubleSide
+
+});
+
+}
+
+wireButton.textContent =
+"▦ Wireframe";
+
+}
+
+};
+
+
+
+/* =========================
+   STYLE CHANGE
+========================= */
+
+style.onchange=()=>{
+
+if(!model)return;
+
+
+if(style.value==="wire"){
+
+model.material =
+new THREE.MeshBasicMaterial({
+
+wireframe:true,
+
+color:0xffffff,
+
+side:
+THREE.DoubleSide
+
+});
+
+}
+
+else if(
+style.value==="clay"
+){
+
+model.material =
+new THREE.MeshStandardMaterial({
+
+color:0xbcbcbc,
+
+roughness:.8,
+
+side:
+THREE.DoubleSide
+
+});
+
+}
+
+else{
+
+model.material =
+new THREE.MeshStandardMaterial({
+
+map:texture,
+
+roughness:.72,
+
+side:
+THREE.DoubleSide
+
+});
+
+}
+
+};
+
+
+
+/* =========================
+   OBJ EXPORT
+========================= */
+
+function makeOBJ(){
+
+const geometry =
+model.geometry;
+
+
+const position =
+geometry.attributes
+.position.array;
+
+
+const normal =
+geometry.attributes
+.normal.array;
+
+
+const uv =
+geometry.attributes
+.uv.array;
+
+
+const index =
+geometry.index.array;
+
+
+let obj =
+"# Photo To 3D\n";
+
+
+for(
+let i=0;
+i<position.length;
+i+=3
+){
+
+obj +=
+
+"v "+
+position[i]+" "+
+position[i+1]+" "+
+position[i+2]+
+"\n";
+
+}
+
+
+for(
+let i=0;
+i<uv.length;
+i+=2
+){
+
+obj +=
+
+"vt "+
+uv[i]+" "+
+uv[i+1]+
+"\n";
+
+}
+
+
+for(
+let i=0;
+i<normal.length;
+i+=3
+){
+
+obj +=
+
+"vn "+
+normal[i]+" "+
+normal[i+1]+" "+
+normal[i+2]+
+"\n";
+
+}
+
+
+for(
+let i=0;
+i<index.length;
+i+=3
+){
+
+const a =
+index[i]+1;
+
+const b =
+index[i+1]+1;
+
+const c =
+index[i+2]+1;
+
+
+obj +=
+
+"f "+
+a+"/"+a+"/"+a+
+" "+
+b+"/"+b+"/"+b+
+" "+
+c+"/"+c+"/"+c+
+"\n";
+
+}
+
+
+return obj;
+
+}
+
+
+
+objButton.onclick=()=>{
+
+if(!model)return;
+
+
+const blob =
+new Blob(
+
+[makeOBJ()],
+
+{
+type:"text/plain"
+}
+
+);
+
+
+const url =
+URL.createObjectURL(
+blob
+);
+
+
+const a =
+document.createElement(
+"a"
+);
+
+
+a.href =
+url;
+
+a.download =
+"photo_3d_model.obj";
+
+
+a.click();
+
+
+URL.revokeObjectURL(
+url
+);
+
+};
+
+
+
+/* =========================
+   GLB EXPORT
+========================= */
+
+glbButton.onclick=()=>{
+
+if(!model)return;
+
+
+status.textContent =
+"GLB export ho raha hai...";
+
+
+const exporter =
+new GLTFExporter();
+
+
+exporter.parse(
+
+model,
+
+(result)=>{
+
+let blob;
+
+
+if(
+result instanceof
+ArrayBuffer
+){
+
+blob =
+new Blob(
+[result],
+{
+type:
+"model/gltf-binary"
+}
+);
+
+}
+
+else{
+
+blob =
+new Blob(
+[
+JSON.stringify(result)
+],
+{
+type:
+"application/json"
+}
+);
+
+}
+
+
+const url =
+URL.createObjectURL(
+blob
+);
+
+
+const a =
+document.createElement(
+"a"
+);
+
+
+a.href =
+url;
+
+
+a.download =
+"photo_3d_model.glb";
+
+
+a.click();
+
+
+URL.revokeObjectURL(
+url
+);
+
+
+status.textContent =
+"✅ GLB ready!";
+
+},
+
+(error)=>{
+
+status.textContent =
+"GLB export me error hua.";
+
+},
+
+{
+binary:true
+}
+
+);
+
+};
+
+
+
+/* =========================
+   ANIMATION
+========================= */
+
+function animate(){
+
+requestAnimationFrame(
+animate
+);
+
+
+if(
+rotating &&
+model
+){
+
+model.rotation.y +=
+0.006;
+
+}
+
+
+controls.update();
+
+
+renderer.render(
+scene,
+camera
+);
+
+}
+
+
+animate();
+
+</script>
+
+</body>
+</html>

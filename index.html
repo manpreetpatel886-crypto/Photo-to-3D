@@ -387,7 +387,14 @@ AI 3D reconstruction server/model ki zarurat hoti hai.
 </div>
 
 
-
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/"
+  }
+}
+</script>
 <script type="module">
 
 
@@ -395,14 +402,13 @@ AI 3D reconstruction server/model ki zarurat hoti hai.
    THREE JS
 ========================= */
 
-import * as THREE from
-"https://cdn.jsdelivr.net/npm/three@0.170.0/build/three.module.js";
+ import * as THREE from "three";
 
 import {OrbitControls} from
-"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/controls/OrbitControls.js";
+"three/addons/controls/OrbitControls.js";
 
 import {GLTFExporter} from
-"https://cdn.jsdelivr.net/npm/three@0.170.0/examples/jsm/exporters/GLTFExporter.js";
+"three/addons/exporters/GLTFExporter.js"; 
 
 
 
